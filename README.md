@@ -1,2 +1,2 @@
-# Peg Affiliate Tracker
+# Yearn V2 Affiliate Tracker
 
