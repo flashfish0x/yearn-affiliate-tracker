@@ -58,11 +58,6 @@ contract YearnAffiliateTracker {
         emit RefferredBalanceIncreased(affilaiteId, address(v), msg.sender, vaultBalance, refferredBalance[affilaiteId][address(v)][msg.sender]);
     }
 
-    function _setAllowances(address vault, IERC20 want, uint256 amount) internal {
-        
-        
-    }
-
     //we only check up to 20
     function isRegistered(address token, address vault) public view {
         for(uint i = 0; i < 20; i++){
