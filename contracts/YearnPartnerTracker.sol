@@ -11,36 +11,36 @@ import {VaultAPI} from "@yearnvaults/contracts/BaseStrategy.sol";
 
 import "../interfaces/IYearnRegistry.sol";
 
-contract YearnAffiliateTracker {
+contract YearnPartnerTracker {
     using SafeERC20 for IERC20;
     using Address for address;
     using SafeMath for uint256;
 
-    event RefferredBalanceIncreased(address affiliateId, address vault, address depositer, uint amountAdded, uint totalDeposited);
-    mapping (address => mapping (address => mapping(address => uint256))) public refferredBalance;
+    event ReferredBalanceIncreased(address partnerId, address vault, address depositer, uint amountAdded, uint totalDeposited);
+    mapping (address => mapping (address => mapping(address => uint256))) public referredBalance;
 
     IYearnRegistry public constant registry = IYearnRegistry(0x50c1a2eA0a861A967D9d0FFE2AE4012c2E053804);
 
-    function deposit(address vault, address affilaiteId) external returns (uint256){
+    function deposit(address vault, address partnerId) external returns (uint256){
         VaultAPI v = VaultAPI(vault);
         IERC20 want = IERC20(v.token());
         isRegistered(address(want), vault);
 
         uint256 amount = want.balanceOf(msg.sender);
 
-        _internalDeposit(v, want, affilaiteId, amount);
+        _internalDeposit(v, want, partnerId, amount);
 
     }
 
-    function deposit(address vault, address affilaiteId, uint256 amount) external returns (uint256){
+    function deposit(address vault, address partnerId, uint256 amount) external returns (uint256){
         VaultAPI v = VaultAPI(vault);
         IERC20 want = IERC20(v.token());
         isRegistered(address(want), vault);
 
-        _internalDeposit(v, want, affilaiteId, amount);
+        _internalDeposit(v, want, partnerId, amount);
     }
 
-    function _internalDeposit(VaultAPI v, IERC20 want, address affilaiteId, uint256 amount) internal{
+    function _internalDeposit(VaultAPI v, IERC20 want, address partnerId, uint256 amount) internal{
 
         if(want.allowance(address(this), address(v)) < amount){
             want.safeApprove(address(v), 0);
@@ -48,14 +48,11 @@ contract YearnAffiliateTracker {
         }
 
         want.safeTransferFrom(msg.sender, address(this), amount);
-        v.deposit();
-
-        uint256 vaultBalance = v.balanceOf(address(this));
-        v.transfer(msg.sender, vaultBalance);
+        uint256 receivedShares = v.deposit(amount, msg.sender);
 
         //we use vault tokens and not deposit amount to track deposits. ie what percent of the tvl is referred
-        refferredBalance[affilaiteId][address(v)][msg.sender] = refferredBalance[affilaiteId][address(v)][msg.sender].add(vaultBalance);
-        emit RefferredBalanceIncreased(affilaiteId, address(v), msg.sender, vaultBalance, refferredBalance[affilaiteId][address(v)][msg.sender]);
+        referredBalance[partnerId][address(v)][msg.sender] = referredBalance[partnerId][address(v)][msg.sender].add(receivedShares);
+        emit ReferredBalanceIncreased(partnerId, address(v), msg.sender, receivedShares, referredBalance[partnerId][address(v)][msg.sender]);
     }
 
     //we only check up to 20

@@ -1,9 +1,9 @@
 from itertools import count
 import brownie
 
-def test_tracing(web3, chain,whale, dai, interface, accounts, YearnAffiliateTracker):
+def test_tracing(web3, chain,whale, dai, interface, accounts, YearnPartnerTracker):
     
-    tracker = whale.deploy(YearnAffiliateTracker)
+    tracker = whale.deploy(YearnPartnerTracker)
     dai.approve(tracker, 2**256-1, {'from': whale})
 
     #a real yearn vault
@@ -25,9 +25,9 @@ def test_tracing(web3, chain,whale, dai, interface, accounts, YearnAffiliateTrac
     assert vault.balanceOf(whale) > 0
     bal = vault.balanceOf(whale)
     print(bal/1e18)
-    assert tracker.refferredBalance(affiliate_id, vault, whale) == bal
+    assert tracker.referredBalance(affiliate_id, vault, whale) == bal
 
     tracker.deposit(vault, affiliate_id, amount, {'from': whale})
-    assert tracker.refferredBalance(affiliate_id, vault, whale) == bal * 2
+    assert tracker.referredBalance(affiliate_id, vault, whale) == bal * 2
 
     
